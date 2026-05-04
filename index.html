@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>英単語テスト</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="app">
+    <section class="test-panel" aria-labelledby="app-title">
+      <div class="top-bar">
+        <div>
+          <p class="label">English Vocabulary Quiz</p>
+          <h1 id="app-title">英単語テスト</h1>
+        </div>
+        <div class="score-box" aria-live="polite">
+          <span id="score">0</span>/<span id="total">0</span>
+        </div>
+      </div>
+
+      <div class="progress">
+        <div id="progress-bar" class="progress-bar"></div>
+      </div>
+
+      <div class="question-area">
+        <p class="question-label">日本語に合う英単語を入力してください</p>
+        <p id="question" class="question">準備中...</p>
+      </div>
+
+      <form id="answer-form" class="answer-form">
+        <label for="answer">答え</label>
+        <div class="answer-row">
+          <input id="answer" type="text" autocomplete="off" placeholder="例: apple">
+          <button type="submit">答える</button>
+        </div>
+      </form>
+
+      <p id="feedback" class="feedback" aria-live="polite"></p>
+
+      <div class="actions">
+        <button id="next-button" type="button">次の問題</button>
+        <button id="restart-button" type="button" class="secondary">最初から</button>
+      </div>
+    </section>
+
+    <aside class="review-panel" aria-labelledby="review-title">
+      <h2 id="review-title">復習リスト</h2>
+      <p class="review-note">間違えた単語がここに表示されます。</p>
+      <ul id="review-list" class="review-list"></ul>
+    </aside>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>
