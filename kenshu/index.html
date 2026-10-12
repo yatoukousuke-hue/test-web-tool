@@ -14,23 +14,19 @@
 <link rel="manifest" href="manifest.webmanifest">
 <style>
   html,body{margin:0;height:100%;background:#E6F4EE;overflow:hidden}
-  iframe{position:fixed;top:env(safe-area-inset-top,0);left:0;right:0;bottom:0;width:100%;height:calc(100% - env(safe-area-inset-top,0px));border:0;background:#E6F4EE}
   #load{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font:700 15px "Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif;color:#1D1B3A;background:#E6F4EE;transition:opacity .3s}
   #load img{width:96px;height:96px;border-radius:22px;box-shadow:0 6px 18px rgba(29,27,58,.18)}
-  #load a{font-size:13px;color:#3355FF}
-  #load.hide{opacity:0;pointer-events:none}
+  #load a{font-size:14px;color:#fff;background:#3355FF;padding:10px 18px;border-radius:999px;text-decoration:none}
 </style>
 </head>
 <body>
 <div id="load"><img src="icon-180.png" alt=""><div>研修ナビをひらいています…</div><a id="fb" href="#" hidden>ひらかないときはこちら</a></div>
-<iframe id="app" title="リーダー先生研修ナビ" allow="clipboard-write; fullscreen"></iframe>
 <script>
+  // アプリ本体（Apps Script）を直接ひらく。iPhoneのホーム画面から埋め込み表示すると真っ白になることがあるため
   var APP="https://script.google.com/macros/s/AKfycbwj_o2QOvTg0fuTFaq9gl832RnnrlsGyNM3QfigFRLMmBq8an5g6VhVthUk3vlwlyxg/exec";
-  var f=document.getElementById("app"), ld=document.getElementById("load"), fb=document.getElementById("fb");
-  fb.href=APP;
-  f.onload=function(){ ld.className="hide"; };
-  f.src=APP;
-  setTimeout(function(){ fb.hidden=false; }, 8000);
+  var fb=document.getElementById("fb"); fb.href=APP;
+  setTimeout(function(){ location.replace(APP); }, 300);
+  setTimeout(function(){ fb.hidden=false; }, 4000);
 </script>
 </body>
 </html>
