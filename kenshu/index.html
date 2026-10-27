@@ -13,20 +13,85 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="manifest" href="manifest.webmanifest">
 <style>
-  html,body{margin:0;height:100%;background:#E6F4EE;overflow:hidden}
-  #load{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font:700 15px "Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif;color:#1D1B3A;background:#E6F4EE;transition:opacity .3s}
-  #load img{width:96px;height:96px;border-radius:22px;box-shadow:0 6px 18px rgba(29,27,58,.18)}
-  #load a{font-size:14px;color:#fff;background:#3355FF;padding:10px 18px;border-radius:999px;text-decoration:none}
+  html,body{margin:0;min-height:100%;background:#E6F4EE;font:15px/1.7 "Hiragino Maru Gothic ProN","Hiragino Sans",sans-serif;color:#1D1B3A}
+  #load{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;font-weight:700;background:#E6F4EE}
+  #load img,.top img{width:96px;height:96px;border-radius:22px;box-shadow:0 6px 18px rgba(29,27,58,.18)}
+  #load a,.btn{font-size:15px;font-weight:800;color:#fff;background:#3355FF;padding:12px 18px;border-radius:999px;text-decoration:none;border:none;display:block;text-align:center;width:100%;box-sizing:border-box;font-family:inherit;cursor:pointer}
+  #load a{width:auto;font-size:14px;padding:10px 18px}
+  .btn.ghost{background:#fff;color:#1D1B3A;border:2px solid #1D1B3A}
+  .btn:disabled{opacity:.5}
+  #setup{max-width:440px;margin:0 auto;padding:max(28px,env(safe-area-inset-top)) 18px 40px}
+  .top{text-align:center;margin-bottom:14px}.top img{width:72px;height:72px}
+  h1{font-size:21px;margin:10px 0 4px;text-align:center}
+  .card{background:#fff;border:2px solid #1D1B3A;border-radius:18px;box-shadow:3px 3px 0 #1D1B3A;padding:16px;margin:14px 0}
+  .card b{display:block;margin-bottom:4px}
+  ol{margin:6px 0 0;padding-left:1.3em}li{margin:4px 0}
+  #st{min-height:1.5em;margin:12px 0;font-weight:700;text-align:center}
+  #st.ok{color:#0E8A5C}#st.ng{color:#C2410C}
+  .sub{font-size:13px;color:#5B5B7A}
 </style>
 </head>
 <body>
 <div id="load"><img src="icon-180.png" alt=""><div>研修ナビをひらいています…</div><a id="fb" href="#" hidden>ひらかないときはこちら</a></div>
+
+<div id="setup" hidden>
+  <div class="top"><img src="icon-180.png" alt=""><h1>🔔 スマホの通知を受け取る</h1><div class="sub">期限が近づいたときや、室長から返事が来たときにお知らせします</div></div>
+  <div class="card" id="ios" hidden>
+    <b>📱 iPhoneは、ホーム画面のアイコンから設定します</b>
+    <ol>
+      <li>下の共有ボタン（□に↑）→「ホーム画面に追加」</li>
+      <li>ホーム画面にできた「研修ナビ」のアイコンからひらく</li>
+      <li>研修ナビのホームで、もう一度「🔔 通知をオンにする」を押す</li>
+    </ol>
+  </div>
+  <div class="card" id="nosup" hidden><b>この端末では通知を設定できません</b><div class="sub">iPhoneはiOS 16.4以降で、ホーム画面のアイコンからひらいたときに設定できます。Androidは Chrome でひらいてください。</div></div>
+  <button class="btn" id="on" hidden>🔔 通知をオンにする</button>
+  <div id="st"></div>
+  <a class="btn ghost" id="back" href="#">研修ナビにもどる</a>
+</div>
+
 <script>
-  // アプリ本体（Apps Script）を直接ひらく。iPhoneのホーム画面から埋め込み表示すると真っ白になることがあるため
-  var APP="https://script.google.com/macros/s/AKfycbwj_o2QOvTg0fuTFaq9gl832RnnrlsGyNM3QfigFRLMmBq8an5g6VhVthUk3vlwlyxg/exec";
-  var fb=document.getElementById("fb"); fb.href=APP;
-  setTimeout(function(){ location.replace(APP); }, 300);
-  setTimeout(function(){ fb.hidden=false; }, 4000);
+  var APP = "https://script.google.com/macros/s/AKfycbwj_o2QOvTg0fuTFaq9gl832RnnrlsGyNM3QfigFRLMmBq8an5g6VhVthUk3vlwlyxg/exec";
+  var $ = function (id) { return document.getElementById(id); };
+  var q = new URLSearchParams(location.search), code = q.get("push");
+  var swReg = ("serviceWorker" in navigator) ? navigator.serviceWorker.register("sw.js").catch(function () { return null; }) : Promise.resolve(null);
+
+  if (!code) {
+    // ふだんは、アプリ本体（Apps Script）を直接ひらく。iPhoneのホーム画面から埋め込み表示すると真っ白になることがあるため
+    $("fb").href = APP;
+    setTimeout(function () { location.replace(APP); }, 300);
+    setTimeout(function () { $("fb").hidden = false; }, 4000);
+  } else {
+    // 通知の設定画面
+    $("load").hidden = true; $("setup").hidden = false; $("back").href = APP;
+    var ua = navigator.userAgent, isIOS = /iPhone|iPad|iPod/.test(ua) || (/Macintosh/.test(ua) && "ontouchend" in document);
+    var standalone = navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+    var supported = ("serviceWorker" in navigator) && ("PushManager" in window) && ("Notification" in window);
+    if (isIOS && !standalone) $("ios").hidden = false;
+    else if (!supported) $("nosup").hidden = false;
+    else $("on").hidden = false;
+
+    var st = function (t, cls) { $("st").textContent = t; $("st").className = cls || ""; };
+    var b64 = function (s) { s = s.replace(/-/g, "+").replace(/_/g, "/"); while (s.length % 4) s += "="; var r = atob(s), a = new Uint8Array(r.length); for (var i = 0; i < r.length; i++) a[i] = r.charCodeAt(i); return a; };
+
+    $("on").onclick = function () {
+      var btn = $("on"); btn.disabled = true; st("設定しています…");
+      Notification.requestPermission().then(function (perm) {
+        if (perm !== "granted") throw new Error("通知が「許可しない」になっています。設定アプリ →「通知」→「研修ナビ」から許可できます");
+        return swReg.then(function (r) { return r || navigator.serviceWorker.register("sw.js"); }).then(function () { return navigator.serviceWorker.ready; });
+      }).then(function (reg) {
+        return fetch(APP + "?action=vapid").then(function (r) { return r.json(); }).then(function (k) {
+          if (!k || !k.key) throw new Error("通知の準備がまだです。室長に伝えてください");
+          return reg.pushManager.getSubscription().then(function (s) { return s || reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: b64(k.key) }); });
+        });
+      }).then(function (sub) {
+        return fetch(APP, { method: "POST", body: JSON.stringify({ action: "push", code: code, sub: sub.toJSON(), ua: ua.slice(0, 120) }) }).then(function (r) { return r.json(); });
+      }).then(function (r) {
+        if (!r || !r.ok) throw new Error((r && r.error) || "登録できませんでした。もう一度ためしてください");
+        btn.hidden = true; st("✅ 通知がオンになりました。" + r.name + " 先生のスマホに、テストの通知を送りました", "ok");
+      }).catch(function (e) { btn.disabled = false; st(String((e && e.message) || e), "ng"); });
+    };
+  }
 </script>
 </body>
 </html>

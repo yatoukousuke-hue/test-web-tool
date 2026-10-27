@@ -1,0 +1,8 @@
+{
+  "name": "kenshu-navi-push",
+  "private": true,
+  "description": "研修ナビのスマホ通知を送るための小さなサーバー（Vercel）",
+  "dependencies": {
+    "web-push": "3.6.7"
+  }
+}
