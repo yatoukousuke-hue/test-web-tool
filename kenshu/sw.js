@@ -16,6 +16,6 @@ self.addEventListener("push", function (e) {
 
 self.addEventListener("notificationclick", function (e) {
   e.notification.close();
-  var url = new URL((e.notification.data && e.notification.data.url) || "./", self.registration.scope).href;
-  e.waitUntil(self.clients.openWindow(url));
+  // 通知をタップしたら、この入口（ホーム画面のアイコンと同じ場所）から研修ナビをひらく
+  e.waitUntil(self.clients.openWindow(self.registration.scope));
 });

@@ -58,8 +58,11 @@
 
   if (!code) {
     // ふだんは、アプリ本体（Apps Script）を直接ひらく。iPhoneのホーム画面から埋め込み表示すると真っ白になることがあるため
-    $("fb").href = APP;
-    setTimeout(function () { location.replace(APP); }, 300);
+    // どの入口（GitHub Pages / Vercel）から来たかを研修ナビに伝える（通知の設定画面をその入口で開くため）
+    var base = location.origin + location.pathname.replace(/index\.html$/, "");
+    var GO = APP + "?shell=" + encodeURIComponent(base);
+    $("fb").href = GO;
+    setTimeout(function () { location.replace(GO); }, 300);
     setTimeout(function () { $("fb").hidden = false; }, 4000);
   } else {
     // 通知の設定画面
