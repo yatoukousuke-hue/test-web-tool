@@ -20,7 +20,8 @@
   #load a{width:auto;font-size:14px;padding:10px 18px}
   .btn.ghost{background:#fff;color:#1D1B3A;border:2px solid #1D1B3A}
   .btn:disabled{opacity:.5}
-  #setup{max-width:440px;margin:0 auto;padding:max(28px,env(safe-area-inset-top)) 18px 40px}
+  #setup,#add{max-width:440px;margin:0 auto;padding:max(28px,env(safe-area-inset-top)) 18px 40px}
+  [hidden]{display:none!important}
   .top{text-align:center;margin-bottom:14px}.top img{width:72px;height:72px}
   h1{font-size:21px;margin:10px 0 4px;text-align:center}
   .card{background:#fff;border:2px solid #1D1B3A;border-radius:18px;box-shadow:3px 3px 0 #1D1B3A;padding:16px;margin:14px 0}
@@ -33,6 +34,29 @@
 </head>
 <body>
 <div id="load"><img src="icon-180.png" alt=""><div>研修ナビをひらいています…</div><a id="fb" href="#" hidden>ひらかないときはこちら</a></div>
+
+<div id="add" hidden>
+  <div class="top"><img src="icon-180.png" alt=""><h1>研修ナビをホーム画面に置く</h1><div class="sub">ホーム画面のアイコンから、すぐにひらけるようになります</div></div>
+  <div class="card" id="addios" hidden>
+    <b>📱 iPhone（Safari）</b>
+    <ol>
+      <li>この画面のまま、下の共有ボタン（□に↑）を押す</li>
+      <li>「ホーム画面に追加」→ 右上の「追加」</li>
+      <li>ホーム画面の「研修ナビ」アイコンからひらく</li>
+    </ol>
+    <div class="sub" style="margin-top:6px">※ 研修ナビをひらいてからだと、アイコンがGoogleの画面になります。先にこの画面で追加してください</div>
+  </div>
+  <div class="card" id="addand" hidden>
+    <b>📱 Android（Chrome）</b>
+    <ol>
+      <li>この画面のまま、右上の「︙」を押す</li>
+      <li>「ホーム画面に追加」（または「アプリをインストール」）</li>
+      <li>ホーム画面の「研修ナビ」アイコンからひらく</li>
+    </ol>
+  </div>
+  <a class="btn" id="go2" href="#">このまま研修ナビをひらく</a>
+  <button class="btn ghost" id="skip" style="margin-top:10px">次からはこの画面を出さない</button>
+</div>
 
 <div id="setup" hidden>
   <div class="top"><img src="icon-180.png" alt=""><h1>🔔 スマホの通知を受け取る</h1><div class="sub">期限が近づいたときや、室長から返事が来たときにお知らせします</div></div>
@@ -62,8 +86,17 @@
     var base = location.origin + location.pathname.replace(/index\.html$/, "");
     var GO = APP + "?shell=" + encodeURIComponent(base);
     $("fb").href = GO;
-    setTimeout(function () { location.replace(GO); }, 300);
-    setTimeout(function () { $("fb").hidden = false; }, 4000);
+    // スマホのブラウザでひらいたとき：先に「ホーム画面に追加」を案内（研修ナビへ移ったあとだと、アイコンがGoogleの画面になるため）
+    var ua0 = navigator.userAgent, ios0 = /iPhone|iPad|iPod/.test(ua0) || (/Macintosh/.test(ua0) && "ontouchend" in document), and0 = /Android/.test(ua0);
+    var sa0 = navigator.standalone === true || (window.matchMedia && matchMedia("(display-mode: standalone)").matches);
+    var skip0 = false; try { skip0 = localStorage.getItem("kn-skipadd") === "1"; } catch (e) {}
+    if ((ios0 || and0) && !sa0 && !skip0) {
+      $("load").hidden = true; $("add").hidden = false; $(ios0 ? "addios" : "addand").hidden = false; $("go2").href = GO;
+      $("skip").onclick = function () { try { localStorage.setItem("kn-skipadd", "1"); } catch (e) {} location.replace(GO); };
+    } else {
+      setTimeout(function () { location.replace(GO); }, 300);
+      setTimeout(function () { $("fb").hidden = false; }, 4000);
+    }
   } else {
     // 通知の設定画面
     $("load").hidden = true; $("setup").hidden = false; $("back").href = APP;
